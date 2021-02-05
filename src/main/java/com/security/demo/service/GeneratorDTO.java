@@ -5,17 +5,19 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import com.security.demo.model.UserRole;
 import com.security.demo.model.entity.User;
 import com.security.demo.model.entity.dto.UserDTO;
 
+@Component
 public class GeneratorDTO {
 
 	@Autowired
-	private static PasswordEncoder passwordEncoder;
+	private PasswordEncoder passwordEncoder;
 	
-	public static User transformDTOtoUser(UserDTO dto) {
+	public User transformDTOtoUser(UserDTO dto) {
 		User user  = new User();
 		user.setUsername(dto.getUsername());
 		user.setName(dto.getName());
@@ -31,9 +33,9 @@ public class GeneratorDTO {
 		return user;
 	}
 	
-	public static UserDTO fromUserToUserDTO(User user) {
+	public UserDTO fromUserToUserDTO(User user) {
 		
-		UserDTO dto = new UserDTO(user.getUsername(), user.getPassword(), user.getName(), user.getSurname(), user.getAge(),
+		UserDTO dto = new UserDTO(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getName(), user.getSurname(), user.getAge(),
 				user.getEmail(), user.getRoles());
 		
 		return dto;

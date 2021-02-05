@@ -2,6 +2,7 @@ package com.security.demo.model.entity;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,14 +30,17 @@ import com.security.demo.model.UserRole;
 @EntityListeners(AuditingEntityListener.class)
 public class User extends ObjectEntity implements UserDetails {
 
+
+
+	@Column(unique = true)
+	private String username;
+	private String password;
 	private String name;
 	private String surname;
 	private Integer age;
 	private String email;
-	private String password;
-
-	@Column(unique = true)
-	private String username;
+	
+	private Boolean locked;
 	
 	@CreatedDate
 	private LocalDateTime createTime;
@@ -47,6 +51,8 @@ public class User extends ObjectEntity implements UserDetails {
 	private LocalDateTime deleteTime;
 	
 	private LocalDateTime lastPasswordChange;
+	
+	private LocalDateTime nextPasswordChange;
 	
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
@@ -63,14 +69,26 @@ public class User extends ObjectEntity implements UserDetails {
 		this.age = age;
 		this.email = email;
 		this.password = password;
+		this.locked = false;
+		this.nextPasswordChange = LocalDateTime.now();
+		this.nextPasswordChange.plusMonths(3);
+		this.roles = new HashSet<UserRole>();
 	}
 
 	public User(Integer id) {
 		super(id);
+		this.roles = new HashSet<UserRole>();
+		this.locked = false;
+		this.nextPasswordChange = LocalDateTime.now();
+		this.nextPasswordChange.plusMonths(3);
 	}
 	
 	public User() {
 		super();
+		this.roles = new HashSet<UserRole>();
+		this.locked = false;
+		this.nextPasswordChange = LocalDateTime.now();
+		this.nextPasswordChange.plusMonths(3);
 	}
 
 	public Set<UserRole> getRoles() {
@@ -93,22 +111,24 @@ public class User extends ObjectEntity implements UserDetails {
 
 	@Override
 	public boolean isAccountNonExpired() {
-		return this.getDeleteTime()==null;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
+		//return (this.getDeleteTime().compareTo(LocalDateTime.now())) > 0 ? true : false;
 		return false;
 	}
 
 	@Override
+	public boolean isAccountNonLocked() {
+		return this.locked;
+	}
+
+	@Override
 	public boolean isCredentialsNonExpired() {
+		//return (this.getNextPasswordChange().compareTo(LocalDateTime.now()) > 0) ? true : false;
 		return false;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return false;
+		return this.locked;
 	}
 	
 	@Override
@@ -200,4 +220,22 @@ public class User extends ObjectEntity implements UserDetails {
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
+	public Boolean getLocked() {
+		return locked;
+	}
+
+	public void setLocked(Boolean locked) {
+		this.locked = locked;
+	}
+
+	public LocalDateTime getNextPasswordChange() {
+		return nextPasswordChange;
+	}
+
+	public void setNextPasswordChange(LocalDateTime nextPasswordChange) {
+		this.nextPasswordChange = nextPasswordChange;
+	}
+	
+	
 }
